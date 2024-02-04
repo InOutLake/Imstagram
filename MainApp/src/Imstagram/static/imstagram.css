@@ -1,0 +1,22 @@
+.circular-image {
+    border-radius: 50%;
+    width: 150px; /* Adjusted for radius effect, making the image 15px radius */
+    height: 150px; /* Matching height to ensure circle shape */
+    object-fit: cover;
+    object-position: top; /* Ensures the circle is taken from the top of the picture */
+    margin: 20px;
+}
+
+
+.memory-card {
+    height: 350px; /* Fixed height for a memory card */
+    object-fit: cover;
+    object-position: top; /* Ensures the image is taken from the top */
+    margin-top: 20px;
+}
+
+.card-img-top {
+    height: 200px; /* Fixed height for image */
+    object-fit: cover;
+    object-position: center; /* Ensures the image is taken from the top */
+}

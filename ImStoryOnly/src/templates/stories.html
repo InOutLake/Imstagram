@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            {% for image in data %}
+                <div class="col-md-4">
+                    <div class="card" style="width: 18rem;">
+                        <h5 class="card-header">{{ image.small_description }}</h5>
+                        <div class="card-body">
+                            <p class="card-text">{{ image.full_description }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
