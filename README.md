@@ -6,6 +6,7 @@ Server app includes:
 1. Custom OAuth2 implemetnation for the client
 2. REST API to work with the client
 3. Simple app to show DB's content
+   
 You can see all the API endpoints on localhost:8000/api/swagger or download .yaml file localhost:8000/api/schema
 
 ## Client
