@@ -10,4 +10,4 @@ Server app includes:
 You can see all the API endpoints on localhost:8000/api/swagger or download .yaml file localhost:8000/api/schema
 
 ## Client
-Client is a Flask-based app used for authorizing user with OAuth2 on the server side and use recieved token to display some info.
+Client is a Flask-based app used for authorizing user with OAuth2 on the server side and using recieved token to display some info recieved from the server.
