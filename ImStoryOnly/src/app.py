@@ -13,12 +13,14 @@ server_request_base_url = 'http://oauth-server-app:8000'
 app_base_url = 'http://localhost:8001'
 server_base_url = 'http://localhost:8000'
 
-
 @app.route('/')
 def home():
-    token = session['token']
-    if  not token:
+
+    try : 
+        a = session['token']
+    except:
         return render_template('home.html')
+    token = session['token']
     response = requests.get(f'{server_request_base_url}/dataprovider/provide_images_info/?token={token}')
     if not response.status_code == 200:
         return render_template('error.html', data=response.status_code)
