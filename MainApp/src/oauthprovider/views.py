@@ -4,6 +4,7 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from django.utils import timezone
 from .models import Client, Scope, Token
 from django.views import View
 from .forms import AuthorisationForm
@@ -106,7 +107,7 @@ class Authorize(APIView):
         '''
         form = AuthorisationForm(request.POST)
         if not form.is_valid():
-            return render(request, {'form': form } )
+            return render(request, 'authorize.html', {'form': form } )
         login = form.cleaned_data['login']
         password = form.cleaned_data['password']
         user = authenticate(username=login, password=password)
@@ -177,17 +178,21 @@ class TokenView(APIView):
             token = Token.objects.get(authorization_code=authorization_code)
 
             if not token:
-                return HttpResponseBadRequest("Invalid request!")
+                return HttpResponseBadRequest("Token expired or does not exist")
 
-            if token.client.client_id != client_id:
-                return HttpResponseBadRequest("Invalid request!")
+            if not token.client.client_id == client_id:
+                return HttpResponseBadRequest("Wrong client")
 
-            if str(token.client.client_secret) != client_secret:
-                return HttpResponseBadRequest("Invalid request!")
+            if not str(token.client.client_secret) == client_secret:
+                return HttpResponseBadRequest("Wrong client secret")
 
-            if token.scope != scope:
-                return HttpResponseBadRequest("Invalid request!")
+            if not token.scope == scope:
+                return HttpResponseBadRequest("Wrong scope")
+            
+            if not token.activated and token.authorization_code_expires_at < timezone.make_aware(datetime.now()):
+                return HttpResponseBadRequest("Token expired")
 
+            token.activated = True
             data = {
                 'token': str(token.token_body)
             }
