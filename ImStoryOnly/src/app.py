@@ -2,7 +2,6 @@ from flask import Flask, render_template, redirect, request, session, url_for
 from urllib.parse import urlencode
 from werkzeug.datastructures import ImmutableMultiDict
 import requests
-import pdb
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c7359a4a-fa96-42ff-84aa-fe61bc8a3f24'
@@ -21,7 +20,8 @@ def home():
     except:
         return render_template('home.html')
     token = session['token']
-    response = requests.get(f'{server_request_base_url}/dataprovider/provide_images_info/?token={token}')
+    headers = {'token': f'{token}'}
+    response = requests.get(f'{server_request_base_url}/dataprovider/provide_images_info/', headers=headers)
     if not response.status_code == 200:
         return render_template('error.html', data=response.status_code)
     data = response.json()

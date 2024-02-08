@@ -20,35 +20,33 @@ class GetViewsTestCase(TestCase):
         self.authorization_code =  uuid.uuid4()
         self.test_token = Token.objects.create(user=self.user, scope=self.scope, authorization_code=self.authorization_code,
                                                 client=self.client_obj)
-        with open(f'{MEDIA_ROOT}\\images\\test_user\\OIP.jpg', 'rb') as img_file:
-            self.Image1 = Image.objects.create(
-                image_owner=self.user,
-                image=SimpleUploadedFile(
-                    name='OIP.jpg',
-                    content=img_file.read(),
-                    content_type='image/jpeg'
-                )
+        self.Image1 = Image.objects.create(
+            image_owner=self.user,
+            image=SimpleUploadedFile(
+                name='test.jpg',
+                content=b'test_content',
+                content_type='image/jpeg'
             )
-            img_file.seek(0)
-            self.Image2 = Image.objects.create(
-                image_owner=self.user,
-                image=SimpleUploadedFile(
-                    name='OIP.jpg',
-                    content=img_file.read(),
-                    content_type='image/jpeg'
-                )
+        )
+        self.Image2 = Image.objects.create(
+            image_owner=self.user,
+            image=SimpleUploadedFile(
+                name='test.jpg',
+                content=b'test_content',
+                content_type='image/jpeg'
             )
+        )
 
     def test_provide_images_info(self):
         endpoint = '/dataprovider/provide_images_info/'
-        data = {'token': self.test_token.token_body}
-        response = self.client.get(endpoint, data=data)
+        headers = {'token': self.test_token.token_body}
+        response = self.client.get(endpoint, headers=headers)
         self.assertEqual(response.status_code, 200)
 
     def test_provide_images(self):
         endpoint = '/dataprovider/provide_images/'
-        data = {'token': self.test_token.token_body}
-        response = self.client.get(endpoint, data=data)
+        headers = {'token': self.test_token.token_body}
+        response = self.client.get(endpoint, headers=headers)
         self.assertEqual(response.status_code, 200)
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             for chunk in response.streaming_content:
@@ -66,7 +64,7 @@ class GetViewsTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         for file in os.listdir(MEDIA_ROOT / 'images/test_user'):
-            if re.match(r'OIP_[^\.]+\.jpg', file):
+            if re.match(r'test[^\.]+\.jpg', file):
                 os.remove(MEDIA_ROOT / f'images/test_user/{file}')
         shutil.rmtree(BASE_DIR / 'dataprovider/test_unzipped_images')
         return super().tearDownClass()
@@ -91,11 +89,11 @@ class SaveImageInstanceTestCase(TestCase):
     def test_save_image_instance(self):
         endpoint = '/dataprovider/save_image_instance/'
         data = {
-            'token': self.test_token.token_body,
             'image_instance_info': self.image_instance_info_str,
             'image': self.image_file
         }
-        response = self.client.post(endpoint, data=data)
+        headers = {'token': self.test_token.token_body,}
+        response = self.client.post(endpoint, data=data, headers=headers)
 
         self.assertEqual(response.status_code, 201)
 

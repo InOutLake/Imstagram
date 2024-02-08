@@ -14,6 +14,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 import json
+import pdb
 
 class Authorize(APIView):
     @swagger_auto_schema(
@@ -54,7 +55,7 @@ class Authorize(APIView):
         client = get_client_by_id(client_id)
         if client:
             context = {'scope_info': Scope.objects.get(scope_name=scope_name).scope_info,
-                        'form': AuthorisationForm(request.GET)}
+                        'form': AuthorisationForm()}
             return render(request, "authorize.html", context)
         else:
             return HttpResponseBadRequest("Invalid request!")
@@ -165,10 +166,10 @@ class TokenView(APIView):
     )
     def post(self, request):
         '''
-        Verifies authorisation code, client_id, client_secret and grants an Token
+        Verifies authorisation code, client_id, client_secret and grants a Token
         '''
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body) # TODO uniform incoming data
             client_id = int(data['client_id'])
             client_secret = data['client_secret']
             scope_name = data['scope_name']
@@ -193,6 +194,7 @@ class TokenView(APIView):
                 return HttpResponseBadRequest("Token expired")
 
             token.activated = True
+            token.save()
             data = {
                 'token': str(token.token_body)
             }

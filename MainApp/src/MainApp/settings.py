@@ -42,7 +42,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'drf_yasg.middleware.SwaggerExceptionMiddleware',
-    # 'oauthprovider.middleware.TokenCleanupMiddleware',
+    'oauthprovider.middleware.TokenCleanupMiddleware',
 ]
 
 ROOT_URLCONF = 'MainApp.urls'
