@@ -1,3 +1,5 @@
+from collections.abc import Collection
+from typing import Any
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -15,11 +17,12 @@ class Client(models.Model):
 class Token(models.Model):
     token_id = models.AutoField(primary_key=True)
     token_body = models.UUIDField(null=False, default=uuid.uuid4())
-    authorization_code = models.UUIDField(null=False, default=uuid.uuid4())
+    authorization_code = models.UUIDField(null=True, default=uuid.uuid4())
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=False)
     scope = models.ForeignKey(Scope, on_delete=models.CASCADE, null=False)
     expires_at = models.DateTimeField(null=False, auto_now=False, auto_now_add=False, 
                                       default=timezone.make_aware(datetime.now() + timedelta(hours=6)))
+    authorization_code_expires_at = models.DateTimeField(null=False, auto_now=False, auto_now_add=False, 
+                                      default=timezone.make_aware(datetime.now() + timedelta(minutes=5)))
     client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False)
     activated = models.BooleanField(default=False)
-

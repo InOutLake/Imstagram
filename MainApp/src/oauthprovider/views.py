@@ -4,6 +4,7 @@ from django.http import HttpResponseBadRequest, HttpResponseRedirect, JsonRespon
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from django.utils import timezone
 from .models import Client, Scope, Token
 from django.views import View
 from .forms import AuthorisationForm
@@ -13,6 +14,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 import json
+import pdb
 
 class Authorize(APIView):
     @swagger_auto_schema(
@@ -53,7 +55,7 @@ class Authorize(APIView):
         client = get_client_by_id(client_id)
         if client:
             context = {'scope_info': Scope.objects.get(scope_name=scope_name).scope_info,
-                        'form': AuthorisationForm(request.GET)}
+                        'form': AuthorisationForm()}
             return render(request, "authorize.html", context)
         else:
             return HttpResponseBadRequest("Invalid request!")
@@ -106,7 +108,7 @@ class Authorize(APIView):
         '''
         form = AuthorisationForm(request.POST)
         if not form.is_valid():
-            return render(request, {'form': form } )
+            return render(request, 'authorize.html', {'form': form } )
         login = form.cleaned_data['login']
         password = form.cleaned_data['password']
         user = authenticate(username=login, password=password)
@@ -164,10 +166,10 @@ class TokenView(APIView):
     )
     def post(self, request):
         '''
-        Verifies authorisation code, client_id, client_secret and grants an Token
+        Verifies authorisation code, client_id, client_secret and grants a Token
         '''
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body) # TODO uniform incoming data
             client_id = int(data['client_id'])
             client_secret = data['client_secret']
             scope_name = data['scope_name']
@@ -177,17 +179,22 @@ class TokenView(APIView):
             token = Token.objects.get(authorization_code=authorization_code)
 
             if not token:
-                return HttpResponseBadRequest("Invalid request!")
+                return HttpResponseBadRequest("Token expired or does not exist")
 
-            if token.client.client_id != client_id:
-                return HttpResponseBadRequest("Invalid request!")
+            if not token.client.client_id == client_id:
+                return HttpResponseBadRequest("Wrong client")
 
-            if str(token.client.client_secret) != client_secret:
-                return HttpResponseBadRequest("Invalid request!")
+            if not str(token.client.client_secret) == client_secret:
+                return HttpResponseBadRequest("Wrong client secret")
 
-            if token.scope != scope:
-                return HttpResponseBadRequest("Invalid request!")
+            if not token.scope == scope:
+                return HttpResponseBadRequest("Wrong scope")
+            
+            if not token.activated and token.authorization_code_expires_at < timezone.make_aware(datetime.now()):
+                return HttpResponseBadRequest("Token expired")
 
+            token.activated = True
+            token.save()
             data = {
                 'token': str(token.token_body)
             }

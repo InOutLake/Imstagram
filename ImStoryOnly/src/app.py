@@ -2,27 +2,33 @@ from flask import Flask, render_template, redirect, request, session, url_for
 from urllib.parse import urlencode
 from werkzeug.datastructures import ImmutableMultiDict
 import requests
-import pdb
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c7359a4a-fa96-42ff-84aa-fe61bc8a3f24'
 app_id = 1
-app_base_url = 'http://oauth-client-app:8001'
-imstagram_server_base_url = 'http://oauth-server-app:8000'
+
+app_request_base_url = 'http://oauth-client-app:8001'
+server_request_base_url = 'http://oauth-server-app:8000'
+app_base_url = 'http://localhost:8001'
+server_base_url = 'http://localhost:8000'
 
 @app.route('/')
 def home():
-    token = session['token']
-    if  not token:
+
+    try : 
+        a = session['token']
+    except:
         return render_template('home.html')
-    response = requests.get(f'{imstagram_server_base_url}/dataprovider/provide_images_info/?token={token}')
-    if response.status_code != 200:
+    token = session['token']
+    headers = {'token': f'{token}'}
+    response = requests.get(f'{server_request_base_url}/dataprovider/provide_images_info/', headers=headers)
+    if not response.status_code == 200:
         return render_template('error.html', data=response.status_code)
     data = response.json()
     return render_template('stories.html', data=data)
     
 
-@app.route('/authenticate/')
+@app.route('/authorize/')
 def authenticate():
     data = {
         'client_id': app_id,
@@ -31,13 +37,12 @@ def authenticate():
     }
     return redirect(f'http://localhost:8000/oauth/authorize/' + '?' + urlencode(data))
 
-@app.route('/authenticate/oauth_callback/cb')
+@app.route('/authorize/oauth_callback/cb')
 def oauth_callback():
-    authorization_code = request.args.get('code', '')
-    if authorization_code:
-        return get_token(authorization_code)
-    else:
-        return "Error occured"
+    authorization_code = request.args.get('code', None)
+    if not authorization_code:
+        render_template('error.html', data='Login or password were incorrect')
+    return get_token(authorization_code)
 
 @app.route('/get_token/')
 def get_token(authorization_code: str):
@@ -45,10 +50,12 @@ def get_token(authorization_code: str):
         'client_id': app_id,
         'client_secret': app.secret_key,
         'scope_name': 'Read',
-        'redirect_uri': app_base_url,
+        'redirect_uri': app_request_base_url,
         'code': authorization_code,
     }
-    response = requests.post(f'{imstagram_server_base_url}/oauth/token/', json=data)
+    response = requests.post(f'{server_request_base_url}/oauth/token/', json=data)
+    if not response.status_code == 200:
+        return render_template('error.html', data=response.status_code)
     data = response.json()
     session['token'] = data.get('token')
     return redirect(url_for('home'))

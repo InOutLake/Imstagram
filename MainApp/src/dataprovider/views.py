@@ -22,7 +22,7 @@ class ProvideImagesInfo(ListAPIView):
         """
         Retrieve all image info in QuerySet<ImageModel>.
         """
-        token_body = self.request.GET.get('token')
+        token_body = self.request.headers.get('token')
         token = get_token_by_token_body(token_body)
         return Image.objects.filter(image_owner=token.user)
 
@@ -48,7 +48,7 @@ class ProvideImages(APIView):
         """
         Retrieve all images owned by the authenticated user as a ZIP file.
         """
-        token_body = request.GET['token']
+        token_body = request.headers.get('token')
         token = get_token_by_token_body(token_body)
         user = token.user
         images = Image.objects.filter(image_owner=user)
@@ -100,7 +100,8 @@ class SaveImageInstance(APIView):
         except ValueError:
             return Response({'error': 'Invalid JSON'}, status=400)
         
-        token = get_token_by_token_body(request.POST['token'])
+        token_body = request.headers.get('token') # TODO uniform token getting into function
+        token = get_token_by_token_body(token_body)
         if 'image' not in request.FILES:
             return Response({'error': 'No image file was provided'}, status=400)
 
