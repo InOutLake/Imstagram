@@ -4,7 +4,7 @@ This repository contains client and server apps. I do not have much experience i
 Server is a django-based app used to store and send data to endpoints.
 Server app includes:
 1. Custom OAuth2 implemetnation for the client
-2. REST API to work with the client
+2. REST API to work with the client # well it's hardly rest API and requires a lot of reformatting
 3. Simple app to show DB's content
    
 You can see all the API endpoints on localhost:8000/api/swagger or download .yaml file localhost:8000/api/schema
